@@ -1,0 +1,57 @@
+//configuration 
+const express =require('express')
+const mysql=require("mysql2")
+const dotenv=require("dotenv")
+
+
+// Charger les variables d'environnement
+dotenv.config()
+
+// Initialisation de l'application
+const app=express()
+const port =process.env.PORT || 3000
+
+// Middleware pour gérer le JSON
+app.use(express.json())
+
+//connexion a la base de données
+const db=mysql.createConnection({
+    host:process.env.DB_HOST,
+    user:process.env.DB_USER,
+    password:process.env.DB_PASSWORD,
+    database:process.env.DB_NAME,
+
+})
+
+db.connect((err)=>{
+    if(err){
+        console.error("Erreur de connexion a la base de données ",err)
+        process.exit(1)
+    }
+    console.log("Connecté a la base de données ")
+
+})
+
+//definire une route pour le test 
+
+app.get("/",(req,res)=>{
+    res.send("API Fonctionnelel !")
+})
+
+
+
+
+// Importer les routes
+const utilisateurRoutes=require("./routes/utilisateursRoutes")
+const etudiantRoute=require("./routes/etudiantRoutes")
+
+// Utiliser les routes
+app.use('/api/utilisateurs',utilisateurRoutes)
+app.use("/api/etudiants",etudiantRoute)
+
+
+//démarage du serveure
+
+app.listen(port,()=>{
+    console.log(`Serveur démarré sur  http://localhost:${port}`)
+})
