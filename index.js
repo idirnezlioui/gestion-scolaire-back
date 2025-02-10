@@ -2,15 +2,17 @@
 const express =require('express')
 const mysql=require("mysql2")
 const dotenv=require("dotenv")
-
+const cors=require("cors")
 
 // Charger les variables d'environnement
 dotenv.config()
 
+
+
 // Initialisation de l'application
 const app=express()
 const port =process.env.PORT || 3000
-
+app.use(cors())
 // Middleware pour gérer le JSON
 app.use(express.json())
 
