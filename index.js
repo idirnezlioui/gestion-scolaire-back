@@ -46,10 +46,16 @@ app.get("/",(req,res)=>{
 // Importer les routes
 const utilisateurRoutes=require("./routes/utilisateursRoutes")
 const etudiantRoute=require("./routes/etudiantRoutes")
+const domaineRoute=require("./routes/domaineRoutes")
+const niveauRoute=require("./routes/niveauRoutes")
+const sessionRoute=require("./routes/sessionRoute")
 
 // Utiliser les routes
 app.use('/api/utilisateurs',utilisateurRoutes)
 app.use("/api/etudiants",etudiantRoute)
+app.use("/api/domaines",domaineRoute)
+app.use("/api/niveaux",niveauRoute)
+app.use("/api/sessions",sessionRoute)
 
 
 //démarage du serveure
