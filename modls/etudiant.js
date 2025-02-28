@@ -2,7 +2,7 @@ const db=require("../config/db")
 const Etudiant={
     getAll :async()=>{
         const[rows]=await db.query(`
-           SELECT e.num_etudiant,e.nom,e.prenom,e.date_naiss,e.lieu_naiss,e.nationalite,e.date_inse,n.niveau,d.intitule,sp.intitule,s.type_session,sp.intitule FROM etudiants as e LEFT JOIN domaines as d ON e.id_domaine=d.ref_domaine LEFT JOIN sessions as s ON e.id_session=s.id_session LEFT JOIN niveau as n ON e.id_niveau=n.id_niveau LEFT JOIN specialites as sp ON d.sigle_sp=sp.sigle_specia;
+           SELECT e.num_etudiant,e.nom,e.prenom ,n.niveau,d.intitule,s.type_session ,e.date_inse FROM etudiants as e LEFT JOIN niveau as n on e.id_niveau=n.id_niveau LEFT JOIN domaines as d on e.id_domaine=d.ref_domaine LEFT JOIN sessions as s on e.id_session=s.id_session;
         `);
         return rows
     },
@@ -37,12 +37,13 @@ const Etudiant={
 
     //insertion de l'etudiant 
     create:async(etudiant)=>{
-        const { nom, prenom, date_naiss, lieu_naiss, nationalite, niveau, date_inse, sigle_specia, type_session ,intitule_domaine} = etudiant;
+        const { nom, prenom, date_naiss, lieu_naiss, nationalite, niveau, date_inse, type_session ,intitule_domaine} = etudiant;
         //il faut d'abord recupere id session vue que l'utilisateur vas asiasire type-session
         try {
             //recupere l'id du domaine depuis sont intitule
-            const[domaineResult]=await db.query("select ref_domaine from domaines where intitule=?",[intitule_domaine])
+            const [domaineResult] = await db.query("SELECT ref_domaine FROM domaines WHERE intitule = ?", [intitule_domaine]);
             if (domaineResult.length===0) {
+                console.log(domaineResult)
                 throw new Error("Domane introuvable");
                 
             }
@@ -69,8 +70,8 @@ const Etudiant={
             //insertion de l'etudiant
 
             const [result]=await db.query(
-                `INSERT INTO etudiants( nom, prenom, date_naiss, lieu_naiss, nationalite,id_domaine ,id_niveau,id_session, date_inse, )  VALUES(?,?,?,?,?,?,?,?,?)`,
-                [nom,prenom,date_naiss,lieu_naiss,nationalite,id_niveau,date_inse,id_domaine,id_session]
+                `INSERT INTO etudiants( nom, prenom, date_naiss, lieu_naiss, nationalite,id_domaine ,id_niveau,id_session, date_inse)  VALUES(?,?,?,?,?,?,?,?,?)`,
+                [nom,prenom,date_naiss,lieu_naiss,nationalite,id_domaine,id_niveau,id_session,date_inse]
             )
             return {succes:true,message:"etudiant ajouter avec succe",id:result.insertId}
         } catch (error) {
