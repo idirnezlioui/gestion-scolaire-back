@@ -65,7 +65,7 @@ const Etudiant={
                 throw new Error("Type de session introvable")
             } 
             
-            const id_session=sessionResult[0].id_session
+            const id_session=sessionResult[0].id_session 
 
             //insertion de l'etudiant
 

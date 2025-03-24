@@ -49,6 +49,7 @@ const etudiantRoute=require("./routes/etudiantRoutes")
 const domaineRoute=require("./routes/domaineRoutes")
 const niveauRoute=require("./routes/niveauRoutes")
 const sessionRoute=require("./routes/sessionRoute")
+const paiementRoute=require("./routes/paiementRoutes")
 
 // Utiliser les routes
 app.use('/api/utilisateurs',utilisateurRoutes)
@@ -56,6 +57,7 @@ app.use("/api/etudiants",etudiantRoute)
 app.use("/api/domaines",domaineRoute)
 app.use("/api/niveaux",niveauRoute)
 app.use("/api/sessions",sessionRoute)
+app.use("/api/paiement",paiementRoute)
 
 
 //démarage du serveure
