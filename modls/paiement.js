@@ -82,7 +82,7 @@ getTarif: async (id_etudiant) => {
 
       // Vérification du premier paiement (doit être > 1800€)
       if (totalpaiments === 0 && montant_paye < 1800) {
-        throw new Error("Le premier paiement doit être d’au moins 1800€");
+        throw new Error("Le premier paiement doit être d’au moins 1800€. Veuillez vérifier la somme que vous avez saisie.");
       }
 
       // Vérification de la date du prochain paiement

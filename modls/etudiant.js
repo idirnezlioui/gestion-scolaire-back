@@ -2,7 +2,7 @@ const db=require("../config/db")
 const Etudiant={
     getAll :async()=>{
         const[rows]=await db.query(`
-           SELECT e.num_etudiant,e.nom,e.prenom ,n.niveau,d.intitule,s.type_session ,e.date_inse FROM etudiants as e LEFT JOIN niveau as n on e.id_niveau=n.id_niveau LEFT JOIN domaines as d on e.id_domaine=d.ref_domaine LEFT JOIN sessions as s on e.id_session=s.id_session;
+           SELECT e.num_etudiant,e.nom,e.prenom ,n.niveau,d.intitule,s.type_session ,DATE_FORMAT(e.date_inse, '%d/%m/%Y') AS date_inse FROM etudiants as e LEFT JOIN niveau as n on e.id_niveau=n.id_niveau LEFT JOIN domaines as d on e.id_domaine=d.ref_domaine LEFT JOIN sessions as s on e.id_session=s.id_session;
         `);
         return rows
     },

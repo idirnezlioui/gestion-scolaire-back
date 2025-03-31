@@ -21,7 +21,7 @@ const createPaiement = async (req, res) => {
     const { id_etudiant, montant_paye, remise, date_paiement, date_max_paiement } = req.body;
     const adejaRemise = await Paiment.verifierRemise(id_etudiant);
     if (adejaRemise && remise > 0) {
-      return res.status(400).json({ error: "L'étudiant a déjà une remise" });
+      return res.status(400).json({ error: "Cette remise ne peut pas être appliquée car l'étudiant a déjà une remise sur ses paiements précédents." });
     }
 
     // Récupérer le tarif de la formation
