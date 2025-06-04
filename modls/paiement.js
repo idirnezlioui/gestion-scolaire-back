@@ -13,27 +13,26 @@ const Paiment = {
 
   // Récupérer le tarif de la formation
   // Récupérer le tarif de la formation
-getTarif: async (id_etudiant) => {
-  try {
-    const [rows] = await db.query(
-      `SELECT n.tarifs 
+  getTarif: async (id_etudiant) => {
+    try {
+      const [rows] = await db.query(
+        `SELECT n.tarifs 
        FROM etudiants AS e
        LEFT JOIN niveau AS n ON e.id_niveau = n.id_niveau
        WHERE e.num_etudiant = ?`,
-      [id_etudiant]
-    );
+        [id_etudiant]
+      );
 
-    if (rows.length > 0) {
-      return rows[0].tarifs; // Retourner le tarif si trouvé
-    } else {
-      throw new Error("Aucun tarif trouvé pour cet étudiant.");
+      if (rows.length > 0) {
+        return rows[0].tarifs; // Retourner le tarif si trouvé
+      } else {
+        throw new Error("Aucun tarif trouvé pour cet étudiant.");
+      }
+    } catch (error) {
+      console.error("Erreur lors de la récupération du tarif :", error.message);
+      throw new Error("Impossible de récupérer le tarif de la formation.");
     }
-  } catch (error) {
-    console.error("Erreur lors de la récupération du tarif :", error.message);
-    throw new Error("Impossible de récupérer le tarif de la formation.");
-  }
-},
-
+  },
 
   // Vérification si l'étudiant a déjà une remise
   verifierRemise: async (idEtudiant) => {
@@ -53,7 +52,10 @@ getTarif: async (id_etudiant) => {
       );
       return paiements;
     } catch (error) {
-      console.error("Erreur lors de la récupération des paiements de l'étudiant :", error);
+      console.error(
+        "Erreur lors de la récupération des paiements de l'étudiant :",
+        error
+      );
       throw error;
     }
   },
@@ -61,52 +63,86 @@ getTarif: async (id_etudiant) => {
   // Créer un nouveau paiement
   create: async (paiment) => {
     try {
-      let { id_etudiant, montant_paye, date_paiement, date_max_paiement, remise } = paiment;
+      const {
+        id_etudiant,
+        montant_paye,
+        date_paiement,
+        date_max_paiement,
+        remise,
+      } = paiment;
 
-      // Récupérer le tarif de la formation
+      const datePaiement = new Date(date_paiement);
+      const dateMaxPaiement = new Date(date_max_paiement);
+
+      if (isNaN(datePaiement) || isNaN(dateMaxPaiement)) {
+        throw new Error("Les dates fournies sont invalides.");
+      }
+
+      if (dateMaxPaiement <= datePaiement) {
+        throw new Error(
+          "La date du prochain paiement doit être après la date actuelle."
+        );
+      }
+
+      const adejaRemise = await Paiment.verifierRemise(id_etudiant);
+      if (adejaRemise && remise > 0) {
+        throw new Error(
+          "Cette remise ne peut pas être appliquée car l'étudiant a déjà une remise."
+        );
+      }
+
       const tarifformation = await Paiment.getTarif(id_etudiant);
       if (!tarifformation) {
-        throw new Error("Impossible de récupérer le tarif de la formation");
+        throw new Error("Impossible de récupérer le tarif de la formation.");
       }
 
-      // Vérifier si l'étudiant a déjà effectué un paiement
-      const [rows] = await db.query(
-        `SELECT COUNT(*) AS total, SUM(p.montant_paye) AS total_paye 
-         FROM paiements AS p 
-         WHERE p.id_etudiant = ?`,
-        [id_etudiant]
-      );
+      const paiements = await Paiment.getPaiementsByEtudiant(id_etudiant);
+      const totalpaiments = paiements.length;
 
-      const totalpaiments = rows[0].total;
-      const totalpaye = rows[0].totalpaye || 0;
-
-      // Vérification du premier paiement (doit être > 1800€)
       if (totalpaiments === 0 && montant_paye < 1800) {
-        throw new Error("Le premier paiement doit être d’au moins 1800€. Veuillez vérifier la somme que vous avez saisie.");
+        throw new Error("Le premier paiement doit être d’au moins 1800€.");
       }
 
-      // Vérification de la date du prochain paiement
-      if (new Date(date_max_paiement) <= new Date(date_paiement)) {
-        throw new Error("La date du prochain paiement doit être après la date actuelle");
+      const totalpayeAvant = paiements.reduce(
+        (sum, p) => sum + parseInt(p.montant_paye || 0),
+        0
+      );
+      const remiseActuelle = parseInt(remise || 0);
+      const totalRemise =
+        paiements.reduce((acc, cur) => {
+          const remiseVal = parseInt(cur.remise || 0);
+          return acc + (isNaN(remiseVal) ? 0 : remiseVal);
+        }, 0) + remiseActuelle;
+
+      const montantActuel = parseInt(montant_paye || 0);
+      const tarif = parseInt(tarifformation || 0);
+      const nouveauTotalPaye = totalpayeAvant + montantActuel;
+      let soldeRestant = tarif - nouveauTotalPaye - totalRemise;
+      if (soldeRestant < 0) soldeRestant = 0;
+
+      //  Fix précision
+      soldeRestant = Math.round(soldeRestant * 100) / 100;
+
+      //  Blocage si déjà tout payé
+      if (soldeRestant <= 0 && tarif - totalpayeAvant - totalRemise <= 0) {
+        throw new Error(
+          "Paiement refusé : la formation est déjà payée en totalité."
+        );
       }
 
-      // Calculer le solde restant
-      let soldeRestant = tarifformation - (totalpaye + montant_paye + (remise || 0));
+      if (soldeRestant < 0) soldeRestant = 0;
 
-      // Déterminer le statut du paiement
       let statutPaiment = "En attente";
-      if (totalpaiments === 0) {
-        statutPaiment = "Partiel"; // Premier paiement -> passe en Partiel
-      }
-      if (soldeRestant <= 0) {
-        statutPaiment = "Payé"; // Si solde = 0, paiement complet
-        soldeRestant = 0;
+      if (soldeRestant === 0) {
+        statutPaiment = "Payé";
+      } else if (nouveauTotalPaye > 0) {
+        statutPaiment = "Partiel";
       }
 
-      // Insérer le paiement dans la base de données
       const [insertResult] = await db.query(
-        `INSERT INTO paiements (id_etudiant, montant_paye, date_paiement, date_max_paiement, solde_restant, statut_paiment, remise) 
-         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        `INSERT INTO paiements 
+        (id_etudiant, montant_paye, date_paiement, date_max_paiement, solde_restant, statut_paiment, remise) 
+        VALUES (?, ?, ?, ?, ?, ?, ?)`,
         [
           id_etudiant,
           montant_paye,
@@ -119,7 +155,6 @@ getTarif: async (id_etudiant) => {
       );
 
       return { success: true, id_paiement: insertResult.insertId };
-
     } catch (error) {
       console.log("Erreur lors de l'ajout du paiement :", error.message);
       throw error;

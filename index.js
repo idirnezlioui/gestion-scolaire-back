@@ -50,7 +50,9 @@ const domaineRoute=require("./routes/domaineRoutes")
 const niveauRoute=require("./routes/niveauRoutes")
 const sessionRoute=require("./routes/sessionRoute")
 const paiementRoute=require("./routes/paiementRoutes")
-
+const specialiteRoute=require("./routes/specialiteRoute")
+const moduleRoute=require("./routes/moduleRoutes")
+const noteRoute=require("./routes/notesRoutes")
 // Utiliser les routes
 app.use('/api/utilisateurs',utilisateurRoutes)
 app.use("/api/etudiants",etudiantRoute)
@@ -58,6 +60,9 @@ app.use("/api/domaines",domaineRoute)
 app.use("/api/niveaux",niveauRoute)
 app.use("/api/sessions",sessionRoute)
 app.use("/api/paiement",paiementRoute)
+app.use("/api/specialite",specialiteRoute)
+app.use("/api/modules",moduleRoute)
+app.use("/api/notes",noteRoute)
 
 
 //démarage du serveure

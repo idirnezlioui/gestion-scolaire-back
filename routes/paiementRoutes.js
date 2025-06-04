@@ -27,4 +27,13 @@ router.get('/tarif-formation/:id',async(req,res)=>{
     }
 })
 
+router.get('/solde-restant/:id', async (req, res) => {
+    try {
+        const paiements = await Paiment.getPaiementsByEtudiant(req.params.id);
+        res.json(paiements);
+    } catch (error) {
+        res.status(500).json({ message: 'Erreur lors de la récupération des paiements', error });
+    }
+});
+
 module.exports=router
