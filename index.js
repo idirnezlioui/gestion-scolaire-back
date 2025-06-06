@@ -53,6 +53,7 @@ const paiementRoute=require("./routes/paiementRoutes")
 const specialiteRoute=require("./routes/specialiteRoute")
 const moduleRoute=require("./routes/moduleRoutes")
 const noteRoute=require("./routes/notesRoutes")
+const profRoute=require("./routes/profsRoutes")
 // Utiliser les routes
 app.use('/api/utilisateurs',utilisateurRoutes)
 app.use("/api/etudiants",etudiantRoute)
@@ -63,6 +64,7 @@ app.use("/api/paiement",paiementRoute)
 app.use("/api/specialite",specialiteRoute)
 app.use("/api/modules",moduleRoute)
 app.use("/api/notes",noteRoute)
+app.use("/api/profs",profRoute)
 
 
 //démarage du serveure
