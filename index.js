@@ -54,6 +54,7 @@ const specialiteRoute=require("./routes/specialiteRoute")
 const moduleRoute=require("./routes/moduleRoutes")
 const noteRoute=require("./routes/notesRoutes")
 const profRoute=require("./routes/profsRoutes")
+const profModuleNiveux=require('./routes/profmodulesRoutes')
 // Utiliser les routes
 app.use('/api/utilisateurs',utilisateurRoutes)
 app.use("/api/etudiants",etudiantRoute)
@@ -65,6 +66,7 @@ app.use("/api/specialite",specialiteRoute)
 app.use("/api/modules",moduleRoute)
 app.use("/api/notes",noteRoute)
 app.use("/api/profs",profRoute)
+app.use("/api/prof_modules_niveaux",profModuleNiveux)
 
 
 //démarage du serveure
