@@ -84,9 +84,36 @@ const createEtudiant = async (req, res) => {
     console.error("Erreur lors de la création :", error);
     res.status(500).json({ error: "Erreur interne du serveur" });
   }
+
+  const updateEtudiant = async (req, res) => {
+  const id = req.params.id;
+  try {
+    const result = await Etudiant.update(id, req.body);
+    if (!result.succes) {
+      return res.status(400).json({ error: result.message });
+    }
+    res.status(200).json({ message: result.message });
+  } catch (error) {
+    res.status(500).json({ error: "Erreur serveur lors de la mise à jour" });
+  }
+};
+
+};
+
+const updateEtudiant = async (req, res) => {
+  const id = req.params.id;
+  try {
+    const result = await Etudiant.update(id, req.body);
+    if (!result.succes) {
+      return res.status(400).json({ error: result.message });
+    }
+    res.status(200).json({ message: result.message });
+  } catch (error) {
+    res.status(500).json({ error: "Erreur serveur lors de la mise à jour" });
+  }
 };
 
 
 
 
-module.exports={getAlletudiants,createEtudiant,getEtudiantById,getEtudiantByNom,getEtudiantByNiveau,getEtudiantBySession}
+module.exports={getAlletudiants,createEtudiant,getEtudiantById,getEtudiantByNom,getEtudiantByNiveau,getEtudiantBySession,updateEtudiant}

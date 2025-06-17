@@ -160,6 +160,27 @@ const Paiment = {
       throw error;
     }
   },
+
+  getPaiementsSemaineProchaine: async () => {
+  const [rows] = await db.query(`
+    SELECT 
+      e.nom, 
+      e.prenom, 
+      n.niveau, 
+      d.intitule AS domaine, 
+      s.type_session, 
+      p.date_max_paiement
+    FROM paiements AS p
+    JOIN etudiants AS e ON e.num_etudiant = p.id_etudiant
+    JOIN niveau AS n ON e.id_niveau = n.id_niveau
+    JOIN domaines AS d ON e.id_domaine = d.ref_domaine
+    JOIN sessions AS s ON e.id_session = s.id_session
+    WHERE p.date_max_paiement BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 7 DAY)
+    ORDER BY p.date_max_paiement ASC
+  `);
+
+  return rows;
+}
 };
 
 module.exports = Paiment;

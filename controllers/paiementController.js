@@ -27,6 +27,17 @@ const createPaiement = async (req, res) => {
   }
 };
 
+const getPaiementsSemaineProchaine = async (req, res) => {
+  try {
+    const alertes = await Paiment.getPaiementsSemaineProchaine();
+    res.status(200).json(alertes);
+  } catch (error) {
+    console.error("Erreur alerte paiement :", error.message);
+    res.status(500).json({ error: "Erreur serveur - paiements à venir" });
+  }
+};
 
 
-module.exports = { gettAllPaiement, createPaiement };
+
+
+module.exports = { gettAllPaiement, createPaiement ,getPaiementsSemaineProchaine};

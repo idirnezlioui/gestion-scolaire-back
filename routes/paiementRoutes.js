@@ -2,7 +2,7 @@ const express=require("express")
 
 const Paiment = require("../modls/paiement");
 const router=express.Router()
-const{gettAllPaiement,createPaiement}=require("../controllers/paiementController")
+const{gettAllPaiement,createPaiement,getPaiementsSemaineProchaine}=require("../controllers/paiementController")
 router.get('/',gettAllPaiement)
 router.post('/ajouter',createPaiement)
 
@@ -35,5 +35,8 @@ router.get('/solde-restant/:id', async (req, res) => {
         res.status(500).json({ message: 'Erreur lors de la récupération des paiements', error });
     }
 });
+
+router.get('/alertes/paiement-prochain', getPaiementsSemaineProchaine);
+
 
 module.exports=router

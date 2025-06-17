@@ -8,11 +8,23 @@ const Etudiant={
     },
 
     //Recupere un etudiant par sont id 
-    getById:async(id)=>{
-        const[rows]=await db.query("SELECT e.num_etudiant, e.nom, e.prenom, e.date_naiss, n.niveau, s.type_session FROM etudiants AS e LEFT JOIN sessions AS s ON e.id_session = s.id_session LEFT JOIN niveau as n ON e.id_niveau=n.id_niveau WHERE e.num_etudiant = ?;",
-            [id])
-        return rows.length>0? rows[0]:null
-    },
+   getById: async (id) => {
+  const [rows] = await db.query(
+    `SELECT 
+      e.num_etudiant, e.nom, e.prenom, e.date_naiss, e.lieu_naiss, e.nationalite,
+      n.niveau, s.type_session,
+      d.intitule AS intitule_domaine,
+      DATE_FORMAT(e.date_inse, '%Y-%m-%d') as date_inse
+    FROM etudiants AS e
+    LEFT JOIN sessions AS s ON e.id_session = s.id_session
+    LEFT JOIN niveau AS n ON e.id_niveau = n.id_niveau
+    LEFT JOIN domaines AS d ON e.id_domaine = d.ref_domaine
+    WHERE e.num_etudiant = ?`,
+    [id]
+  );
+  return rows.length > 0 ? rows[0] : null;
+},
+
 
     //recupere un etudiant par nom 
     getByNom:async(nom)=>{
@@ -79,7 +91,72 @@ const Etudiant={
             return {succes:false,message:error.message}
         }
 
-    }
+    },
+
+    update: async (id, etudiant) => {
+  const {
+    nom,
+    prenom,
+    date_naiss,
+    lieu_naiss,
+    nationalite,
+    niveau,
+    date_inse,
+    type_session,
+    intitule_domaine,
+  } = etudiant;
+
+  try {
+    // récupérer les IDs liés
+    const [domaineResult] = await db.query(
+      "SELECT ref_domaine FROM domaines WHERE intitule = ?",
+      [intitule_domaine]
+    );
+    if (domaineResult.length === 0) throw new Error("Domaine introuvable");
+
+    const [niveauResult] = await db.query(
+      "SELECT id_niveau FROM niveau WHERE niveau = ?",
+      [niveau]
+    );
+    if (niveauResult.length === 0) throw new Error("Niveau introuvable");
+
+    const [sessionResult] = await db.query(
+      "SELECT id_session FROM sessions WHERE type_session = ?",
+      [type_session]
+    );
+    if (sessionResult.length === 0) throw new Error("Session introuvable");
+
+    const id_domaine = domaineResult[0].ref_domaine;
+    const id_niveau = niveauResult[0].id_niveau;
+    const id_session = sessionResult[0].id_session;
+
+    // mise à jour
+    await db.query(
+      `UPDATE etudiants 
+       SET nom=?, prenom=?, date_naiss=?, lieu_naiss=?, nationalite=?, 
+           id_domaine=?, id_niveau=?, id_session=?, date_inse=? 
+       WHERE num_etudiant=?`,
+      [
+        nom,
+        prenom,
+        date_naiss,
+        lieu_naiss,
+        nationalite,
+        id_domaine,
+        id_niveau,
+        id_session,
+        date_inse,
+        id,
+      ]
+    );
+
+    return { succes: true, message: "Étudiant mis à jour avec succès" };
+  } catch (error) {
+    console.error("Erreur update :", error.message);
+    return { succes: false, message: error.message };
+  }
+}
+
 }
 
 module.exports=Etudiant
