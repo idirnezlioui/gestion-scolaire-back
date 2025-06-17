@@ -70,15 +70,23 @@ const getEtudiantBySession=async(req,res)=>{
     
 }
 
-const createEtudiant=async(req,res)=>{
-    try {
-        const newEtudiant=await Etudiant.create(req.body)
-        if (!newEtudiant.succes) {
-            return res.status(400).json({error:newEtudiant.message})
-        }
-        res.status(200).json({message:"Etudiant cree avec succe",newEtudiant})
-    } catch (error) {
-        res.status(500).json({error:"Erreur lors de la creation de l'etudiant"})
+
+
+const createEtudiant = async (req, res) => {
+  try {
+    console.log("Requête reçue :", req.body);  
+    const newEtudiant = await Etudiant.create(req.body);
+    if (!newEtudiant.succes) {
+      return res.status(400).json({ error: newEtudiant.message });
     }
-}
+    res.status(200).json({ message: "Etudiant créé avec succès", newEtudiant });
+  } catch (error) {
+    console.error("Erreur lors de la création :", error);
+    res.status(500).json({ error: "Erreur interne du serveur" });
+  }
+};
+
+
+
+
 module.exports={getAlletudiants,createEtudiant,getEtudiantById,getEtudiantByNom,getEtudiantByNiveau,getEtudiantBySession}

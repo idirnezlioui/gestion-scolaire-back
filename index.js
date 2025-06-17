@@ -67,6 +67,7 @@ app.use("/api/modules",moduleRoute)
 app.use("/api/notes",noteRoute)
 app.use("/api/profs",profRoute)
 app.use("/api/prof_modules_niveaux",profModuleNiveux)
+app.use('/uploads', express.static('uploads'));
 
 
 //démarage du serveure

@@ -10,24 +10,19 @@ const gettAllProfmod=async(req,res)=>{
     }
 }
 const createAffectations = async (req, res) => {
-  const { id_prof, modules, niveaux } = req.body;
-
-  if (!id_prof || !modules || !niveaux || !modules.length || !niveaux.length) {
-    return res.status(400).json({ error: "Données manquantes ou invalides" });
-  }
+  const { id_prof, ref_module, id_niveau } = req.body;
 
   try {
-    await Promise.all(
-      modules.flatMap(mod =>
-        niveaux.map(niv =>
-          ProfModule   .createAffectation(id_prof, mod, niv)
-        )
-      )
-    );
-    res.status(201).json({ message: "Affectations enregistrées avec succès" });
+    const result = await ProfModule.createAffectation(id_prof, ref_module, id_niveau);
+
+    if (result.affectedRows === 0) {
+      return res.status(200).json({ message: "Affectation déjà existante." });
+    }
+
+    res.status(201).json({ message: "Affectation enregistrée avec succès." });
   } catch (error) {
-    console.error("Erreur insertion:", error);
-    res.status(500).json({ error: "Erreur lors de l'insertion des affectations" });
+    console.error("Erreur lors de l'affectation :", error);
+    res.status(500).json({ error: "Erreur serveur." });
   }
 };
 
