@@ -55,6 +55,7 @@ const moduleRoute=require("./routes/moduleRoutes")
 const noteRoute=require("./routes/notesRoutes")
 const profRoute=require("./routes/profsRoutes")
 const profModuleNiveux=require('./routes/profmodulesRoutes')
+const sendMail=require("./routes/mailRoutes")
 // Utiliser les routes
 app.use('/api/utilisateurs',utilisateurRoutes)
 app.use("/api/etudiants",etudiantRoute)
@@ -67,6 +68,7 @@ app.use("/api/modules",moduleRoute)
 app.use("/api/notes",noteRoute)
 app.use("/api/profs",profRoute)
 app.use("/api/prof_modules_niveaux",profModuleNiveux)
+app.use("/api/mail",sendMail)
 
 
 //démarage du serveure

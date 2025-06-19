@@ -166,6 +166,8 @@ const Paiment = {
     SELECT 
       e.nom, 
       e.prenom, 
+      e.numero_telephone ,
+      e.email,
       n.niveau, 
       d.intitule AS domaine, 
       s.type_session, 
