@@ -3,6 +3,8 @@ const express =require('express')
 const mysql=require("mysql2")
 const dotenv=require("dotenv")
 const cors=require("cors")
+const passport = require("passport");
+require("./config/passport")(passport);
 
 // Charger les variables d'environnement
 dotenv.config()
@@ -56,6 +58,7 @@ const noteRoute=require("./routes/notesRoutes")
 const profRoute=require("./routes/profsRoutes")
 const profModuleNiveux=require('./routes/profmodulesRoutes')
 const sendMail=require("./routes/mailRoutes")
+const authRoute = require("./routes/authRoute")
 // Utiliser les routes
 app.use('/api/utilisateurs',utilisateurRoutes)
 app.use("/api/etudiants",etudiantRoute)
@@ -69,6 +72,7 @@ app.use("/api/notes",noteRoute)
 app.use("/api/profs",profRoute)
 app.use("/api/prof_modules_niveaux",profModuleNiveux)
 app.use("/api/mail",sendMail)
+app.use("/api/auth", authRoute);
 
 
 //démarage du serveure
