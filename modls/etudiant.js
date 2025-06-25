@@ -48,8 +48,9 @@ const Etudiant={
     },
 
     //insertion de l'etudiant 
-    create:async(etudiant)=>{
+    create:async(etudiant,id_utilisateur)=>{
         const { nom, prenom, date_naiss, lieu_naiss, nationalite, niveau, date_inse, type_session ,intitule_domaine} = etudiant;
+        
         //il faut d'abord recupere id session vue que l'utilisateur vas asiasire type-session
         try {
             //recupere l'id du domaine depuis sont intitule
@@ -81,10 +82,11 @@ const Etudiant={
 
             //insertion de l'etudiant
 
-            const [result]=await db.query(
-                `INSERT INTO etudiants( nom, prenom, date_naiss, lieu_naiss, nationalite,id_domaine ,id_niveau,id_session, date_inse)  VALUES(?,?,?,?,?,?,?,?,?)`,
-                [nom,prenom,date_naiss,lieu_naiss,nationalite,id_domaine,id_niveau,id_session,date_inse]
-            )
+            const [result] = await db.query(
+  `INSERT INTO etudiants( nom, prenom, date_naiss, lieu_naiss, nationalite, id_domaine, id_niveau, id_session, date_inse, id_utilisateur)  
+   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+  [nom, prenom, date_naiss, lieu_naiss, nationalite, id_domaine, id_niveau, id_session, date_inse, id_utilisateur]
+);
             return {succes:true,message:"etudiant ajouter avec succe",id:result.insertId}
         } catch (error) {
             console.error("Erreure de lors de l'insertion de l'etudiant ",error.message)

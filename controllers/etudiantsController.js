@@ -75,7 +75,7 @@ const getEtudiantBySession=async(req,res)=>{
 const createEtudiant = async (req, res) => {
   try {
     console.log("Requête reçue :", req.body);  
-    const newEtudiant = await Etudiant.create(req.body);
+    const newEtudiant = await Etudiant.create(req.body,req.user.id);
     if (!newEtudiant.succes) {
       return res.status(400).json({ error: newEtudiant.message });
     }
@@ -85,19 +85,7 @@ const createEtudiant = async (req, res) => {
     res.status(500).json({ error: "Erreur interne du serveur" });
   }
 
-  const updateEtudiant = async (req, res) => {
-  const id = req.params.id;
-  try {
-    const result = await Etudiant.update(id, req.body);
-    if (!result.succes) {
-      return res.status(400).json({ error: result.message });
-    }
-    res.status(200).json({ message: result.message });
-  } catch (error) {
-    res.status(500).json({ error: "Erreur serveur lors de la mise à jour" });
-  }
-};
-
+  console.log("utilisateur connecté:", req.user);
 };
 
 const updateEtudiant = async (req, res) => {

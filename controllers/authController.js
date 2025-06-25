@@ -1,7 +1,8 @@
 const jwt=require("jsonwebtoken")
 const bcrypt=require("bcryptjs")
 const Utilisateur=require("../modls/utilisateurs")
-const secret = "SECRET_KEY";
+const secret = process.env.JWT_SECRET;
+
 
 exports.login = async (req, res) => {
   console.log("Tentative de login détectée !");
@@ -19,14 +20,14 @@ exports.login = async (req, res) => {
     }
 
     const token = jwt.sign(
-      {
-        id: user.id_utilisateur,
-        email: user.mail,
-        role: user.role,
-      },
-      secret,
-      { expiresIn: "1h" }
-    );
+  {
+    id: user.id_utilisateur,
+    email: user.mail,
+    role: user.role,
+  },
+  process.env.JWT_SECRET,
+  { expiresIn: "1h" }
+);
 
     return res.json({
       token,
