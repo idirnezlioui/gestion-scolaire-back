@@ -101,7 +101,22 @@ const updateEtudiant = async (req, res) => {
   }
 };
 
+const getSeancesEtudiants = async (req, res) => {
+  const { niveau, domaine } = req.params;
+  try {
+    const result = await Etudiant.getSeancesByNiveauEtDomaine(niveau, domaine);
+    if (result.length === 0) {
+      return res.status(404).json({ error: "Aucun étudiant trouvé pour ce niveau et domaine" });
+    }
+    res.status(200).json(result);
+  } catch (error) {
+    console.error("Erreur lors de la récupération des séances des étudiants :", error);
+    res.status(500).json({ error: "Erreur lors de la récupération des données" });
+  }
+};
 
 
 
-module.exports={getAlletudiants,createEtudiant,getEtudiantById,getEtudiantByNom,getEtudiantByNiveau,getEtudiantBySession,updateEtudiant}
+
+
+module.exports={getAlletudiants,createEtudiant,getEtudiantById,getEtudiantByNom,getEtudiantByNiveau,getEtudiantBySession,updateEtudiant,getSeancesEtudiants}

@@ -2,7 +2,7 @@ const db=require("../config/db")
 const Etudiant={
     getAll :async()=>{
         const[rows]=await db.query(`
-           SELECT e.num_etudiant,e.nom,e.prenom ,n.niveau,d.intitule,s.type_session ,DATE_FORMAT(e.date_inse, '%d/%m/%Y') AS date_inse FROM etudiants as e LEFT JOIN niveau as n on e.id_niveau=n.id_niveau LEFT JOIN domaines as d on e.id_domaine=d.ref_domaine LEFT JOIN sessions as s on e.id_session=s.id_session;
+           SELECT e.num_etudiant,e.nom,e.prenom,e.nationalite,e.email ,e.numero_telephone ,n.niveau,d.intitule,s.type_session ,DATE_FORMAT(e.date_inse, '%d/%m/%Y') AS date_inse FROM etudiants as e LEFT JOIN niveau as n on e.id_niveau=n.id_niveau LEFT JOIN domaines as d on e.id_domaine=d.ref_domaine LEFT JOIN sessions as s on e.id_session=s.id_session;
         `);
         return rows
     },
@@ -49,8 +49,17 @@ const Etudiant={
 
     //insertion de l'etudiant 
     create:async(etudiant,id_utilisateur)=>{
-        const { nom, prenom, date_naiss, lieu_naiss, nationalite, niveau, date_inse, type_session ,intitule_domaine} = etudiant;
+        const { nom, prenom, date_naiss, lieu_naiss, nationalite,email, numero_telephone, niveau, date_inse, type_session ,intitule_domaine} = etudiant;
         
+
+        const year = new Date(date_inse).getFullYear().toString().slice(-2);
+        // Compter combien d’étudiants existent déjà pour la même année
+        const [countRows] = await db.query(
+          `SELECT COUNT(*) AS count FROM etudiants WHERE num_etudiant LIKE ?`,
+         [`${year}188%`]
+        );
+        const currentCount = countRows[0].count + 1; // +1 pour le prochain numéro
+        const numEtudiant = `${year}188${currentCount}`;
         //il faut d'abord recupere id session vue que l'utilisateur vas asiasire type-session
         try {
             //recupere l'id du domaine depuis sont intitule
@@ -83,9 +92,9 @@ const Etudiant={
             //insertion de l'etudiant
 
             const [result] = await db.query(
-  `INSERT INTO etudiants( nom, prenom, date_naiss, lieu_naiss, nationalite, id_domaine, id_niveau, id_session, date_inse, id_utilisateur)  
-   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-  [nom, prenom, date_naiss, lieu_naiss, nationalite, id_domaine, id_niveau, id_session, date_inse, id_utilisateur]
+  `INSERT INTO etudiants(num_etudiant, nom, prenom, date_naiss, lieu_naiss, nationalite, email, numero_telephone, id_domaine, id_niveau, id_session, date_inse, id_utilisateur)  
+   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+  [numEtudiant, nom, prenom, date_naiss, lieu_naiss, nationalite, email, numero_telephone, id_domaine, id_niveau, id_session, date_inse, id_utilisateur]
 );
             return {succes:true,message:"etudiant ajouter avec succe",id:result.insertId}
         } catch (error) {
@@ -106,6 +115,8 @@ const Etudiant={
     date_inse,
     type_session,
     intitule_domaine,
+    email, 
+    numero_telephone
   } = etudiant;
 
   try {
@@ -135,7 +146,7 @@ const Etudiant={
     // mise à jour
     await db.query(
       `UPDATE etudiants 
-       SET nom=?, prenom=?, date_naiss=?, lieu_naiss=?, nationalite=?, 
+       SET nom=?, prenom=?, date_naiss=?, lieu_naiss=?, nationalite=?, email=?, numero_telephone=? 
            id_domaine=?, id_niveau=?, id_session=?, date_inse=? 
        WHERE num_etudiant=?`,
       [
@@ -144,6 +155,8 @@ const Etudiant={
         date_naiss,
         lieu_naiss,
         nationalite,
+        email, 
+        numero_telephone,
         id_domaine,
         id_niveau,
         id_session,
@@ -157,7 +170,62 @@ const Etudiant={
     console.error("Erreur update :", error.message);
     return { succes: false, message: error.message };
   }
-}
+},
+getSeancesByNiveauEtDomaine: async (niveau, domaine) => {
+  // 1) Récupération des étudiants avec modules et nombre de séances
+  const [rows] = await db.query(`
+    SELECT 
+      e.num_etudiant,               
+      e.nom, 
+      e.prenom, 
+      d.intitule AS domaine,
+      m.nbr_seances AS nombre_seance,
+      m.ref_module,
+      m.intitule
+    FROM etudiants e
+    JOIN niveau n ON e.id_niveau = n.id_niveau
+    JOIN domaines d ON e.id_domaine = d.ref_domaine
+    JOIN modules m ON m.ref_domaine = d.ref_domaine
+    WHERE n.niveau = ? AND d.intitule = ?
+    GROUP BY e.num_etudiant, e.nom, e.prenom, d.intitule, m.ref_module
+    ORDER BY d.intitule, e.nom
+  `, [niveau, domaine]);
+
+  if (rows.length === 0) return [];
+
+  // 2) Récupération des séances déjà renseignées
+  const etudiantIds = rows.map(r => r.num_etudiant);
+  const moduleIds = rows.map(r => r.ref_module);
+
+  const [seances] = await db.query(`
+    SELECT num_etudiant, ref_module, date_seance
+    FROM presence
+    WHERE num_etudiant IN (?) AND ref_module IN (?)
+  `, [etudiantIds, moduleIds]);
+
+  // 3) Création d'une table de correspondance étudiant+module → séances
+  const seancesMap = {};
+  seances.forEach(s => {
+    const key = `${s.num_etudiant}_${s.ref_module}`;
+    if (!seancesMap[key]) seancesMap[key] = [];
+    seancesMap[key].push(s.date_seance);
+  });
+
+  // 4) Ajout des séances renseignées à chaque étudiant
+  const result = rows.map(e => {
+    const key = `${e.num_etudiant}_${e.ref_module}`;
+    return {
+      ...e,
+      seancesRenseignees: seancesMap[key] || [],
+    };
+  });
+
+  return result;
+},
+
+
+
+
 
 }
 

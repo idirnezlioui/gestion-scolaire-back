@@ -6,7 +6,7 @@ const Module={
 
     getAll: async () => {
         const [rows] = await db.query(`
-          SELECT m.ref_module, m.intitule, m.nbr_heures, m.nbr_seances, m.type, d.intitule AS domaine
+          SELECT m.ref_module, m.intitule, m.nbr_heures, m.nbr_seances, m.type, d.intitule,m.ref_domaine AS domaine
           FROM modules m
           LEFT JOIN domaines d ON m.ref_domaine = d.ref_domaine
         `);

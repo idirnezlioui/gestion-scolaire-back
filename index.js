@@ -9,7 +9,7 @@ require("./config/passport")(passport);
 // Charger les variables d'environnement
 dotenv.config()
 
-console.log("🔐 JWT_SECRET =", process.env.JWT_SECRET);
+console.log("JWT_SECRET =", process.env.JWT_SECRET);
 
 // Initialisation de l'application
 const app=express()
@@ -60,6 +60,7 @@ const profModuleNiveux=require('./routes/profmodulesRoutes')
 const sendMail=require("./routes/mailRoutes")
 const authRoute = require("./routes/authRoute")
 const historique=require("./routes/historiqueRoute")
+const presence=require("./routes/presenceRoutes")
 // Utiliser les routes
 app.use('/api/utilisateurs',utilisateurRoutes)
 app.use("/api/etudiants",etudiantRoute)
@@ -75,6 +76,7 @@ app.use("/api/prof_modules_niveaux",profModuleNiveux)
 app.use("/api/mail",sendMail)
 app.use("/api/auth", authRoute);
 app.use("/api/historique",historique)
+app.use('/api/presence', presence);
 
 
 //démarage du serveure
