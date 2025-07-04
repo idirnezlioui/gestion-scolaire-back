@@ -2,7 +2,7 @@ const db=require("../config/db")
 const Etudiant={
     getAll :async()=>{
         const[rows]=await db.query(`
-           SELECT e.num_etudiant,e.nom,e.prenom,e.nationalite,e.email ,e.numero_telephone ,n.niveau,d.intitule,s.type_session ,DATE_FORMAT(e.date_inse, '%d/%m/%Y') AS date_inse FROM etudiants as e LEFT JOIN niveau as n on e.id_niveau=n.id_niveau LEFT JOIN domaines as d on e.id_domaine=d.ref_domaine LEFT JOIN sessions as s on e.id_session=s.id_session;
+           SELECT e.num_etudiant,e.nom,e.prenom,e.nationalite,e.email ,e.numero_telephone ,n.niveau,d.intitule AS domaine,s.type_session ,DATE_FORMAT(e.date_inse, '%d/%m/%Y') AS date_inse FROM etudiants as e LEFT JOIN niveau as n on e.id_niveau=n.id_niveau LEFT JOIN domaines as d on e.id_domaine=d.ref_domaine LEFT JOIN sessions as s on e.id_session=s.id_session;
         `);
         return rows
     },
@@ -10,16 +10,16 @@ const Etudiant={
     //Recupere un etudiant par sont id 
    getById: async (id) => {
   const [rows] = await db.query(
-    `SELECT 
-      e.num_etudiant, e.nom, e.prenom, e.date_naiss, e.lieu_naiss, e.nationalite,
-      n.niveau, s.type_session,
-      d.intitule AS intitule_domaine,
-      DATE_FORMAT(e.date_inse, '%Y-%m-%d') as date_inse
-    FROM etudiants AS e
-    LEFT JOIN sessions AS s ON e.id_session = s.id_session
-    LEFT JOIN niveau AS n ON e.id_niveau = n.id_niveau
-    LEFT JOIN domaines AS d ON e.id_domaine = d.ref_domaine
-    WHERE e.num_etudiant = ?`,
+    `SELECT e.num_etudiant, e.nom, e.prenom, e.date_naiss, e.lieu_naiss, e.nationalite,
+       e.email, e.numero_telephone,  
+       n.niveau, s.type_session,
+       d.intitule AS intitule_domaine,
+       DATE_FORMAT(e.date_inse, '%Y-%m-%d') as date_inse
+FROM etudiants AS e
+LEFT JOIN sessions AS s ON e.id_session = s.id_session
+LEFT JOIN niveau AS n ON e.id_niveau = n.id_niveau
+LEFT JOIN domaines AS d ON e.id_domaine = d.ref_domaine
+WHERE e.num_etudiant = ?`,
     [id]
   );
   return rows.length > 0 ? rows[0] : null;
@@ -146,7 +146,7 @@ const Etudiant={
     // mise à jour
     await db.query(
       `UPDATE etudiants 
-       SET nom=?, prenom=?, date_naiss=?, lieu_naiss=?, nationalite=?, email=?, numero_telephone=? 
+       SET nom=?, prenom=?, date_naiss=?, lieu_naiss=?, nationalite=?, email=?, numero_telephone=?, 
            id_domaine=?, id_niveau=?, id_session=?, date_inse=? 
        WHERE num_etudiant=?`,
       [
