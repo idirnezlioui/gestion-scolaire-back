@@ -23,11 +23,10 @@ LEFT JOIN domaines d ON m.ref_domaine = d.ref_domaine;
     },
 
     create: async (module) => {
-      const { intitule, nbr_heures, nbr_seances, type, domaine } = module;
+      const { intitule, nbr_heures, nbr_seances, type, ref_domaine } = module;
     
       try {
-        // domaine ici est déjà le ref_domaine
-        const ref_domaine = domaine;
+        
     
         const [result] = await db.query(
           `INSERT INTO modules (intitule, nbr_heures, nbr_seances, type, ref_domaine)
