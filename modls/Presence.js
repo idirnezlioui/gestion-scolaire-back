@@ -54,7 +54,14 @@ const Presence = {
   );
   return rows;
 },
+getPresenceByEtudiant :async (num_etudiant) => {
+  
+    const [rows] = await db.query(
+      "SELECT * FROM presence WHERE num_etudiant = ?",
+      [parseInt(num_etudiant)]);
+      return rows;
+}
 
-};
+}
 
 module.exports = Presence;

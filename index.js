@@ -14,9 +14,30 @@ console.log("JWT_SECRET =", process.env.JWT_SECRET);
 // Initialisation de l'application
 const app=express()
 const port =process.env.PORT || 3000
-app.use(cors())
+
 // Middleware pour gérer le JSON
 app.use(express.json())
+// Middleware CORS pour autoriser plusieurs frontaux
+const allowedOrigins = ["http://localhost:4200", "http://localhost:4300"];
+
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+  }
+
+  res.setHeader("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+  res.setHeader("Access-Control-Allow-Credentials", "true");
+
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(200);
+  }
+
+  next();
+});
+
+
 
 //connexion a la base de données
 const db=mysql.createConnection({
@@ -61,6 +82,7 @@ const sendMail=require("./routes/mailRoutes")
 const authRoute = require("./routes/authRoute")
 const historique=require("./routes/historiqueRoute")
 const presence=require("./routes/presenceRoutes")
+const etudiantAuthRoute = require("./routes/etudiantAuthRoute");
 // Utiliser les routes
 app.use('/api/utilisateurs',utilisateurRoutes)
 app.use("/api/etudiants",etudiantRoute)
@@ -77,7 +99,7 @@ app.use("/api/mail",sendMail)
 app.use("/api/auth", authRoute);
 app.use("/api/historique",historique)
 app.use('/api/presence', presence);
-
+app.use("/api/etudiant-auth", etudiantAuthRoute);
 
 //démarage du serveure
 

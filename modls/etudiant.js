@@ -1,4 +1,5 @@
 const db = require("../config/db")
+const bcrypt=require("bcrypt")
 const Etudiant = {
   getAll: async () => {
     const [rows] = await db.query(`
@@ -49,7 +50,9 @@ WHERE e.num_etudiant = ?`,
 
   //insertion de l'etudiant 
   create: async (etudiant, id_utilisateur) => {
-    const { num_etudiant, nom, prenom, date_naiss, lieu_naiss, nationalite, email, numero_telephone, niveau, date_inse, type_session, intitule_domaine } = etudiant;
+    const { num_etudiant, nom, prenom, date_naiss, lieu_naiss, nationalite, email, numero_telephone, niveau, date_inse, type_session, intitule_domaine,mot_de_passe } = etudiant;
+
+    const hashedPassword = await bcrypt.hash(mot_de_passe, 10);
 
     try {
       const [domaineResult] = await db.query("SELECT ref_domaine FROM domaines WHERE intitule = ?", [intitule_domaine]);
@@ -65,9 +68,9 @@ WHERE e.num_etudiant = ?`,
       const id_session = sessionResult[0].id_session;
 
       const [result] = await db.query(
-        `INSERT INTO etudiants(num_etudiant, nom, prenom, date_naiss, lieu_naiss, nationalite, email, numero_telephone, id_domaine, id_niveau, id_session, date_inse, id_utilisateur)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [num_etudiant, nom, prenom, date_naiss, lieu_naiss, nationalite, email, numero_telephone, id_domaine, id_niveau, id_session, date_inse, id_utilisateur]
+        `INSERT INTO etudiants(num_etudiant, nom, prenom, date_naiss, lieu_naiss, nationalite, email, numero_telephone, id_domaine, id_niveau, id_session, date_inse, id_utilisateur,mot_de_passe)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?)`,
+        [num_etudiant, nom, prenom, date_naiss, lieu_naiss, nationalite, email, numero_telephone, id_domaine, id_niveau, id_session, date_inse, id_utilisateur,hashedPassword]
       );
 
       return { succes: true, message: "Étudiant ajouté avec succès", id: result.insertId };

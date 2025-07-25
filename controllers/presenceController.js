@@ -44,5 +44,21 @@ const getSeanceAttendue = async (req, res) => {
     res.status(500).json({ succes: false, message: "Erreur serveur." });
   }
 };
+const getPresenceByEtudiant = async (req, res) => {
+  const { num_etudiant } = req.params;
 
-module.exports = { saisirPresences ,getPresencesParNiveauDomaine,getSeanceAttendue};
+  try {
+    const presences = await Presence.getPresenceByEtudiant(num_etudiant);
+
+    if (!presences || presences.length === 0) {
+      return res.status(404).json({ succes: false, message: "Aucune présence trouvée pour cet étudiant." });
+    }
+
+    res.status(200).json(presences);
+  } catch (error) {
+    console.error("Erreur getPresenceByEtudiant:", error);
+    res.status(500).json({ succes: false, message: "Erreur lors de la récupération des présences." });
+  }
+};
+
+module.exports = { saisirPresences ,getPresencesParNiveauDomaine,getSeanceAttendue,getPresenceByEtudiant};
